@@ -6,6 +6,7 @@
             <b-nav-item><NuxtLink to="/api">API Fetch</NuxtLink></b-nav-item>
             <b-nav-item><NuxtLink to="/fruits">Fruits Store</NuxtLink></b-nav-item>
             <b-nav-item><NuxtLink to="/users">Paging Users Api </NuxtLink></b-nav-item>
+            <b-nav-item><NuxtLink to="/movies">Movies</NuxtLink></b-nav-item>
         </b-nav>
     </main>    
 </template>

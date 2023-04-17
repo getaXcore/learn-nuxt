@@ -113,12 +113,12 @@ export default{
             this.total_rows = res.total_results
             this.currentPage = res.page
             this.genreIds = res.genre_ids
+            this.currentPage = parseInt(res.page) + 1
           }).catch((error) => {
             console.log(error)
         }); 
       },
       getLoadMoreMovies(){
-        const newPage = this.currentPage + 1
         let url
         if(this.namesOfMovie){
           url = `${BASE_URL_SEARCH_THEMOVIE}?query=${this.namesOfMovie}&page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
@@ -126,18 +126,18 @@ export default{
           url = `${BASE_URL_LIST_THEMOVIE}now_playing?page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
         }
 
-        if(newPage <= this.total_pages){
-          this.$axios.$get(`${BASE_URL_LIST_THEMOVIE}now_playing?page=${newPage}&api_key=${API_KEY_THEMOVIE}`)
-              .then((res) => {
-                this.currentPage = res.page
-                res.results.forEach((item, index) => {
-                  this.results.push(res.results[index])
-                });
-              }).catch((error) => {
-                console.log(error)
-          });
-        }else{
+        if(this.currentPage > this.total_pages){
           this.isShow = false
+        }else{              
+          this.$axios.$get(url)
+            .then((res) => {
+              this.currentPage = parseInt(res.page) + 1
+              res.results.forEach((item, index) => {
+                this.results.push(res.results[index])
+              });
+            }).catch((error) => {
+              console.log(error)
+          });
         }
         
       },
@@ -145,25 +145,24 @@ export default{
         window.onscroll = () => {
           let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
           if (bottomOfWindow) {
-            const newPage = this.currentPage + 1
             let url
             if(this.namesOfMovie){
               url = `${BASE_URL_SEARCH_THEMOVIE}?query=${this.namesOfMovie}&page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
             }else{
               url = `${BASE_URL_LIST_THEMOVIE}now_playing?page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
             }
-            if(newPage <= this.total_pages){
+            if(this.currentPage > this.total_pages){
+              this.isShow = false
+            }else{              
               this.$axios.$get(url)
                 .then((res) => {
-                  this.currentPage = res.page
+                  this.currentPage = parseInt(res.page) + 1
                   res.results.forEach((item, index) => {
                     this.results.push(res.results[index])
                   });
                 }).catch((error) => {
                   console.log(error)
               });
-            }else{
-              this.isShow = false
             }
           }
         }
@@ -192,6 +191,7 @@ export default{
         return names
       },
       findMovies(){
+        this.currentPage = 1
         this.getInitialMovies()
       },
     },

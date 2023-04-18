@@ -11,6 +11,9 @@
               <b-row class="my-3">
                 <b-col><b-form-input v-model="namesOfMovie" placeholder="Find your favorite movies name" @keyup.enter="findMovies()"></b-form-input></b-col>
               </b-row>
+              <b-row class="my-3">
+                <b-col><b-form-select v-model="selected" :options="options"></b-form-select></b-col>
+              </b-row>
               <!-- <b-row>
                 <b-col style="margin-left: 50%;">
                   <b-form-datepicker v-model="dateTo" :date-format-options="{ year: 'numeric', month: 'numeric', day: 'numeric' }" locale="en" placeholder="showing date from"></b-form-datepicker>
@@ -73,8 +76,7 @@
   </div>
 </template>
 <script>
-import { ref } from 'vue';
-import { API_KEY_THEMOVIE, BASE_URL_IMG_THEMOVIE, BASE_URL_LIST_THEMOVIE, BASE_URL_SEARCH_THEMOVIE } from '../config/urls'
+import { API_KEY_THEMOVIE, BASE_URL_IMG_THEMOVIE, URL_LIST_THEMOVIE, URL_SEARCH_THEMOVIE, URL_GENRE_THEMOVIE, BASE_URL_THEMOVIE, URL_DISCOVER_THEMOVIE } from '../config/urls'
 export default{
     name: "moviesPage",
     data() {
@@ -92,16 +94,20 @@ export default{
         genreIds:[],
         namesOfMovie: '',
         // dateTo: '',
-        // dateFrom: ''
+        // dateFrom: '',
+        options: [{ value: null, text: 'Select one genre you like' },],
+        selected: null
       }
     },
     methods: {
       getInitialMovies(){
         let url
         if(this.namesOfMovie){
-          url = `${BASE_URL_SEARCH_THEMOVIE}?query=${this.namesOfMovie}&page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
+          url = `${BASE_URL_THEMOVIE}${URL_SEARCH_THEMOVIE}?query=${this.namesOfMovie}&page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
+        }else if(this.selected){
+          url = `${BASE_URL_THEMOVIE}${URL_DISCOVER_THEMOVIE}?page=${this.currentPage}&with_genres=${this.selected}&api_key=${API_KEY_THEMOVIE}`
         }else{
-          url = `${BASE_URL_LIST_THEMOVIE}now_playing?page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
+          url = `${BASE_URL_THEMOVIE}${URL_LIST_THEMOVIE}now_playing?page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
         }
         this.$axios.$get(url)
           .then((res) => {
@@ -121,9 +127,11 @@ export default{
       getLoadMoreMovies(){
         let url
         if(this.namesOfMovie){
-          url = `${BASE_URL_SEARCH_THEMOVIE}?query=${this.namesOfMovie}&page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
+          url = `${BASE_URL_THEMOVIE}${URL_SEARCH_THEMOVIE}?query=${this.namesOfMovie}&page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
+        }else if(this.selected){
+          url = `${BASE_URL_THEMOVIE}${URL_DISCOVER_THEMOVIE}?page=${this.currentPage}&with_genres=${this.selected}&api_key=${API_KEY_THEMOVIE}`
         }else{
-          url = `${BASE_URL_LIST_THEMOVIE}now_playing?page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
+          url = `${BASE_URL_THEMOVIE}${URL_LIST_THEMOVIE}now_playing?page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
         }
 
         if(this.currentPage > this.total_pages){
@@ -147,9 +155,11 @@ export default{
           if (bottomOfWindow) {
             let url
             if(this.namesOfMovie){
-              url = `${BASE_URL_SEARCH_THEMOVIE}?query=${this.namesOfMovie}&page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
+              url = `${BASE_URL_THEMOVIE}${URL_SEARCH_THEMOVIE}?query=${this.namesOfMovie}&page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
+            }else if(this.selected){
+              url = `${BASE_URL_THEMOVIE}${URL_DISCOVER_THEMOVIE}?page=${this.currentPage}&with_genres=${this.selected}&api_key=${API_KEY_THEMOVIE}`
             }else{
-              url = `${BASE_URL_LIST_THEMOVIE}now_playing?page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
+              url = `${BASE_URL_THEMOVIE}${URL_LIST_THEMOVIE}now_playing?page=${this.currentPage}&api_key=${API_KEY_THEMOVIE}`
             }
             if(this.currentPage > this.total_pages){
               this.isShow = false
@@ -172,9 +182,14 @@ export default{
         return convertedDate.toDateString()
       },
       getGenresOri(){
-        this.$axios.$get(`https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY_THEMOVIE}`)
+        this.$axios.$get(`${BASE_URL_THEMOVIE}${URL_GENRE_THEMOVIE}?api_key=${API_KEY_THEMOVIE}`)
           .then((res) => {
             this.genresOri = res.genres
+            this.genresOri.forEach(element => {
+              this.options.push(
+                {value: element.id, text: element.name}
+              )
+            });
           }).catch((error) => {
             console.log(error)
         });
